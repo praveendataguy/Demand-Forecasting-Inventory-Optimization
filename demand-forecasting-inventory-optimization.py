@@ -22,6 +22,8 @@ from prophet import Prophet
 # Model Evaluation and Tuning
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
+import calendar
+
 # visualization libraries
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -286,7 +288,31 @@ axes[2, 2].set_ylabel('Count')
 
 
 # Adjust layout
-plt.tight_layout(reat=[0, 0.03, 1, 0.95])
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 # Show the plots
+plt.show()
+
+# Exploratory Time Series Visualisation
+# Time Series HeatMap of The Demand
+
+# Extract shipping date (DateOrders) and Sales columns
+df_heatmap = df[['shipping date (DateOrders)', 'Sales']]
+# Assuming 'df' is your original dataframe
+
+df_heatmap.set_index('shipping date (DateOrders)', inplace=True)
+resampled_df = df_heatmap.resample('ME').sum()  # Changed 'M' to 'ME'
+
+# Set x-axis ticks to represent months and years
+month_labels = [calendar.month_abbr[m.month] + '-' + str(m.year) for m in resampled_df.index]
+
+# Plot the heatmap
+plt.figure(figsize=(20, 10))
+sns.heatmap(resampled_df.T, cmap='YlGnBu', cbar_kws={'label': 'Sales'})
+plt.xticks(ticks=range(len(month_labels)), labels=month_labels, rotation=80, ha='right')
+
+plt.title('Time Series Heatmap of Sales (Aggregated by Month)')
+plt.xlabel('Month and Year')
+
+
 plt.show()
