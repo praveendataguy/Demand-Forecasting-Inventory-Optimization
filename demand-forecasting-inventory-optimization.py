@@ -96,3 +96,111 @@ def check_null_values(df):
 # Use the function
 check_null_values(df)
 
+# Create New Features
+# Create month, Year, Day, and Weekday columns from Shipping Date
+def extract_date_parts(df, date_column, prefix):
+    try:
+        df[date_column] = pd.to_datetime(df[date_column])
+        df[f'{prefix} Year'] = df[date_column].dt.year
+        df[f'{prefix} Month'] = df[date_column].dt.month
+        df[f'{prefix} Day'] = df[date_column].dt.day
+        df[f'{prefix} Weekday'] = df[date_column].dt.weekday
+        # verify and notify that the columns have been created
+        if f'{prefix} Year' in df.columns and f'{prefix} Month' in df.columns and f'{prefix} Day' in df.columns and f'{prefix} Weekday' in df.columns:
+            print(f"✅ Success! Columns Created: {prefix} Year, {prefix} Month, {prefix} Day, and {prefix} Weekday")
+            return df
+        else:
+            print("Error creating columns. Please check that the date column name is correct.")
+    except Exception as e:
+        print(f"Error creating columns: {e}")
+        return df
+
+# Add Lead Time Feature from Days for shipping (real) and Days for shipment (scheduled)
+df['Lead Time'] = df['Days for shipping (real)'] - df['Days for shipment (scheduled)']
+
+# Use the function to extract date parts
+df = extract_date_parts(df, 'shipping date (DateOrders)', 'Shipping')
+
+# display the shape of the data frame
+print(df.shape)
+
+# Data Encoding
+# one-hot encoding technique on categorical features for future machine learning modeling tasks.
+# Select top-selling product
+top_product = df['Product Card Id'].value_counts().index[0]
+
+# Get top product ID
+print(f"Filtering and Encoding Dataset for Top Product ID: {top_product}")
+
+def prepare_data(df, product_card_id, categorical_cols, columns_to_drop):
+    """
+    Prepare a DataFrame for bivariate analysis and machine learning
+    g by applying label encoding and one-hot encoding to categorical
+    columns and dropping specified columns.
+
+    Parameters:
+    df (pandas.DataFrame): The original DataFrame.
+    product_card_id (int): The product card ID to filter the DataFrame on.
+    categorical_cols (list of str): The names of the categorical columns to apply encoding to.
+    columns_to_drop (list of str): The names of the columns to drop from the DataFrame.
+
+    Returns:
+    pandas.DataFrame: The label encoded DataFrame for bivariate analysis.
+    pandas.DataFrame: The one-hot encoded DataFrame for machine learning.
+    """
+    try:
+        df_copy = df[df['Product Card Id'] == product_card_id].copy()  # create a copy
+
+        # label encoding
+        label_encoder = LabelEncoder()
+        df_label_encoded = df_copy.copy()
+
+        # Apply label encoding to categorical variables in place
+        for col in categorical_cols:
+            df_label_encoded[col] = label_encoder.fit_transform(df_label_encoded[col])
+
+        # Drop specified columns
+        df_label_encoded = df_label_encoded.drop(columns=columns_to_drop)
+
+        # one-hot encoding
+        df_one_hot_encoded = pd.get_dummies(df_copy, columns=categorical_cols)
+
+        # Drop specified columns
+        df_one_hot_encoded = df_one_hot_encoded.drop(columns=columns_to_drop)
+        print("Data Encoding successful. ✅")
+        return  df_one_hot_encoded, df_label_encoded
+    except Exception as e:
+        print(f"Error preparing data: {e}")
+        return None, None
+
+# Use the function to prepare the data for bivariate analysis
+categorical_cols = ['Type', 'Customer Segment',
+                    'Delivery Status',
+                    'Customer City',
+                    'Market',
+                    'Shipping Mode']
+
+columns_to_drop = ['Product Name',
+                   'Days for shipment (scheduled)',
+                   'Sales per customer',
+                   'Days for shipping (real)',
+                   'Customer Country',
+                   'shipping date (DateOrders)',
+                   'Product Card Id',
+                   'Product Category Id',
+                   'Product Status',
+                   'Product Price']
+
+# drop columns and encode data for correlation martrix and Machine learning
+onehot_encode_df, label_encode_df = prepare_data(df, top_product, categorical_cols, columns_to_drop)
+
+# rename Type column to Payment Type
+label_encode_df = label_encode_df.rename(columns={'Type': 'Payment Type'})
+onehot_encode_df = onehot_encode_df.rename(columns={'Type': 'Payment Type'})
+
+# Confirm Encoding of Dataset
+
+print(label_encode_df.dtypes)
+
+# validate the one-hot encoding
+print(onehot_encode_df.dtypes)
