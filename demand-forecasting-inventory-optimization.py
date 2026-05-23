@@ -204,3 +204,89 @@ print(label_encode_df.dtypes)
 
 # validate the one-hot encoding
 print(onehot_encode_df.dtypes)
+
+# Exploratory Data Visualizations
+# Univariate Analysis
+
+fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(15, 15))
+fig.suptitle('Distribution Plots for Selected Variables',
+             fontsize=16)
+# Create a copy of the DataFrame
+df_copy = df.copy()
+
+# Plotting  the top ten products per Product Card Id
+sns.countplot(data=df_copy, x='Product Card Id',
+                color='blue', ax=axes[0, 0],
+                order=df_copy['Product Card Id'].value_counts().iloc[:10].index)
+axes[0, 0].set_title('Distribution of Top Ten Product Id')
+axes[0, 0].set_xlabel('Product Card Id')
+axes[0, 0].set_ylabel('Count')
+
+# Plotting Value of sales in  dollars
+sns.histplot(data=df_copy, x='Sales',
+             kde=True, color='salmon',
+             bins=30, linewidth=2,
+             ax=axes[0, 1])
+axes[0, 1].set_title('Distribution of Sales')
+axes[0, 1].set_xlabel('Sales value in Dollars')
+axes[0, 1].set_ylabel('Frequency')
+
+# Plotting Sales Value per customer
+sns.histplot(data=df_copy, x='Sales per customer',
+             bins=30, kde=True, linewidth=2,
+             color='lightblue', ax=axes[0, 2])
+axes[0, 2].set_title('Distribution of Sales per Customer')
+axes[0, 2].set_xlabel('Sales per Customer')
+axes[0, 2].set_ylabel('Frequency')
+
+# Plotting the distribution of Product Price
+sns.histplot(data=df_copy, x='Product Price', bins=30, kde=True,
+             color='lightgreen', linewidth=2, ax=axes[1, 0])
+
+axes[1, 0].set_title('Distribution of Product Price')
+axes[1, 0].set_xlabel('Product Price')
+
+# plotting a tree map for Customer Segment
+squarify.plot(sizes=df_copy['Customer Segment'].value_counts(),
+              label=df_copy['Customer Segment'].value_counts().index,
+              color=sns.color_palette("Set3"), ax=axes[1, 1])
+axes[1, 1].set_title('Distribution of Customer Segment - Treemap')
+
+# plotting a tree map for Top Ten Product Category Id
+squarify.plot(sizes=df_copy['Product Category Id'].value_counts().iloc[:10],
+                label=df_copy['Product Category Id'].value_counts().iloc[:10].index,
+                color=sns.color_palette("Set2"), ax=axes[1, 2])
+axes[1, 2].set_title('Distribution of Top Ten Product Category Id - Treemap')
+
+# Plotting the distribution of Delivery Status
+sns.countplot(data=df_copy, x='Delivery Status',
+                color='pink', ax=axes[2, 0])
+axes[2, 0].set_title('Distribution of Delivery Status')
+axes[2, 0].set_xlabel('Delivery Status')
+axes[2, 0].set_ylabel('Count')
+
+
+# Plotting the distribution Payment Type with stacked bar chart
+df_copy.groupby(['Type'])['Type'].count().plot(kind='bar',
+                                               stacked=True,
+                                               ax=axes[2, 1])
+
+axes[2, 1].set_title('Distribution of Payment Type')
+axes[2, 1].set_xlabel('Payment Type')
+axes[2, 1].set_ylabel('Count')
+
+# Plotting the Distribution of top ten Customer Country
+sns.countplot(data=df_copy, x='Customer Country',
+                color='orange', ax=axes[2, 2],
+                order=df_copy['Customer Country'].value_counts().iloc[:10].index)
+axes[2, 2].set_title('Distribution of Customer Country')
+axes[2, 2].set_xlabel('Customer Country')
+axes[2, 2].set_ylabel('Count')
+
+
+
+# Adjust layout
+plt.tight_layout(reat=[0, 0.03, 1, 0.95])
+
+# Show the plots
+plt.show()
